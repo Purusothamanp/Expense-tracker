@@ -3,16 +3,18 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || process.env.MYSQL_HOST,
-    user: process.env.DB_USER || process.env.MYSQL_USER,
-    password: process.env.DB_PASSWORD || process.env.MYSQL_PASSWORD,
-    database: process.env.DB_NAME || process.env.MYSQL_DATABASE,
-    port: process.env.DB_PORT || process.env.MYSQL_PORT || 3306,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
+const pool = process.env.MYSQL_URL || process.env.DATABASE_URL
+    ? mysql.createPool(process.env.MYSQL_URL || process.env.DATABASE_URL)
+    : mysql.createPool({
+        host: process.env.DB_HOST || process.env.MYSQL_HOST,
+        user: process.env.DB_USER || process.env.MYSQL_USER,
+        password: process.env.DB_PASSWORD || process.env.MYSQL_PASSWORD,
+        database: process.env.DB_NAME || process.env.MYSQL_DATABASE,
+        port: process.env.DB_PORT || process.env.MYSQL_PORT || 3306,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0
+    });
 
 const promisePool = pool.promise();
 
