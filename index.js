@@ -8,7 +8,7 @@ let budgets = {
     "Entertainment": 1500
 };
 let overviewChartInstance = null;
-const API_URL = 'http://localhost:5000/api';
+const API_URL = '/api';
 let authToken = localStorage.getItem('smartSpendToken') || null;
 let currentUsername = localStorage.getItem('smartSpendUser') || 'User';
 
