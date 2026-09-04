@@ -22,6 +22,10 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/transactions', require('./routes/transactionRoutes'));
 app.use('/api/budgets', require('./routes/budgetRoutes'));
 
+app.get('/api/debug-env', (req, res) => {
+    res.json(Object.keys(process.env).filter(k => k.includes('DB') || k.includes('MYSQL') || k.includes('URL')));
+});
+
 // Fallback to index.html for single page app behavior
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
