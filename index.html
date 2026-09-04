@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker | Personal Finance Manager</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="light-mode">
+    <!-- Login Page -->
+    <div id="login-page" class="auth-page">
+        <div class="auth-container">
+            <button class="btn-icon" id="close-login-btn" style="margin-bottom: 20px; color: var(--text-secondary);"><i class="ph ph-arrow-left"></i> Back</button>
+            <div class="auth-brand">
+                <i class="ph ph-wallet brand-icon"></i>
+                <h2>Expense Tracker</h2>
+            </div>
+            <h3 style="text-align:center; margin-bottom: 24px;">Welcome Back</h3>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-full mt-4">Login</button>
+            </form>
+            <p style="text-align:center; margin-top:20px; color:var(--text-secondary);">
+                Don't have an account? <a href="#" id="link-to-register" style="color:var(--color-primary); font-weight:600;">Sign up</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Register Page -->
+    <div id="register-page" class="auth-page">
+        <div class="auth-container">
+            <button class="btn-icon" id="close-register-btn" style="margin-bottom: 20px; color: var(--text-secondary);"><i class="ph ph-arrow-left"></i> Back</button>
+            <div class="auth-brand">
+                <i class="ph ph-wallet brand-icon"></i>
+                <h2>Expense Tracker</h2>
+            </div>
+            <h3 style="text-align:center; margin-bottom: 24px;">Create an Account</h3>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-username">Username</label>
+                    <input type="text" id="register-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-full mt-4">Create Account</button>
+            </form>
+            <p style="text-align:center; margin-top:20px; color:var(--text-secondary);">
+                Already have an account? <a href="#" id="link-to-login" style="color:var(--color-primary); font-weight:600;">Login</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Landing Page (Shown when not logged in) -->
+    <div id="landing-page" class="landing-page active">
+        <nav class="landing-nav">
+            <div class="brand">
+                <i class="ph ph-wallet brand-icon"></i>
+                <h2>Expense Tracker</h2>
+            </div>
+            <div class="landing-actions">
+                <button class="btn btn-outline" id="landing-login-btn">Login</button>
+                <button class="btn btn-primary" id="landing-register-btn">Sign Up</button>
+            </div>
+        </nav>
+        <div class="landing-hero">
+            <div class="hero-glow"></div>
+            <h1>Take Control of Your <span class="text-gradient">Finances</span></h1>
+            <p>Track your expenses, manage your budgets, and achieve your financial goals with Expense Tracker.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary btn-large" id="landing-cta-btn">Get Started Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard App Layout (Hidden by default) -->
+    <div class="app-layout" id="app-layout" style="display: none;">
+        
+        <!-- Top Navigation -->
+        <nav class="top-navbar">
+            <div class="nav-container">
+                <div class="brand">
+                    <i class="ph ph-wallet brand-icon"></i>
+                    <h2>Expense Tracker</h2>
+                </div>
+                
+                <div class="nav-links">
+                    <!-- Removed Dashboard Link -->
+                </div>
+                
+                <div class="nav-actions">
+                    <div class="month-selector">
+                        <input type="month" id="month">
+                    </div>
+                    <button class="btn-icon" id="theme-toggle"><i class="ph ph-moon"></i></button>
+                    <button class="btn-icon mobile-menu-toggle" id="mobile-menu-btn"><i class="ph ph-list"></i></button>
+                    <button class="btn-icon" id="logout-btn" title="Logout"><i class="ph ph-sign-out"></i></button>
+                    <div class="user-profile" style="display: flex; align-items: center; gap: 8px;">
+                        <span id="nav-username" style="font-weight: 600; font-size: 14px; color: var(--text-primary);">User</span>
+                        <img id="nav-avatar" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="User">
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile Menu Dropdown -->
+            <div class="mobile-nav" id="mobile-nav">
+                <a href="#" class="nav-item active">Dashboard</a>
+                <a href="#" class="nav-item">Transactions</a>
+                <a href="#" class="nav-item">Budgets</a>
+                <a href="#" class="nav-item">Reports</a>
+            </div>
+        </nav>
+
+        <!-- Main Content Workspace -->
+        <main class="main-workspace">
+            
+            <div class="workspace-header">
+                <h2>Overview</h2>
+            </div>
+
+            <!-- Summary Cards Hero -->
+            <div class="summary-hero">
+                <div class="summary-card">
+                    <div class="card-icon balance"><i class="ph ph-wallet"></i></div>
+                    <div class="card-info">
+                        <p>Total Balance</p>
+                        <h3 id="total-balance">₹0</h3>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon income"><i class="ph ph-trend-up"></i></div>
+                    <div class="card-info">
+                        <p>Total Income</p>
+                        <h3 id="total-income">₹0</h3>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon expense"><i class="ph ph-trend-down"></i></div>
+                    <div class="card-info">
+                        <p>Total Expenses</p>
+                        <h3 id="total-expense">₹0</h3>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon savings"><i class="ph ph-piggy-bank"></i></div>
+                    <div class="card-info">
+                        <p>Savings</p>
+                        <h3 id="total-savings">₹0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Column Asymmetric Grid -->
+            <div class="two-column-grid">
+                
+                <!-- LEFT COLUMN (Analytics) -->
+                <div class="col-left">
+                    <div class="card chart-section">
+                        <div class="card-header">
+                            <h3>Cash Flow</h3>
+                            <select id="chart-period" class="select-small">
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="overviewChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card budgets-section">
+                        <div class="card-header">
+                            <h3>Budget Tracker</h3>
+                        </div>
+                        <div class="budget-list" id="budget-list">
+                            <!-- Budgets injected here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- RIGHT COLUMN (Action & History) -->
+                <div class="col-right">
+                    <button class="btn btn-primary btn-large w-full mb-4" id="open-transaction-modal">
+                        <i class="ph ph-plus"></i> Add Transaction
+                    </button>
+
+                    <div class="card categories-section mb-4">
+                        <div class="card-header">
+                            <h3>Top Categories</h3>
+                        </div>
+                        <div class="categories-list" id="categories-list">
+                            <!-- Categories injected here -->
+                        </div>
+                    </div>
+
+                    <div class="card transactions-section">
+                        <div class="card-header" style="flex-direction:column; align-items:flex-start; gap:12px;">
+                            <h3>Recent Activity</h3>
+                            <div class="filter-group w-full" style="display:flex; width:100%;">
+                                <input type="text" id="search-tx" placeholder="Search..." class="input-small" style="flex:1;">
+                                <select id="filter-type" class="select-small">
+                                    <option value="all">All</option>
+                                    <option value="income">Income</option>
+                                    <option value="expense">Expense</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="transaction-list" id="transaction-list" style="max-height: 500px;">
+                            <!-- Transactions injected here -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Transaction Modal -->
+    <div class="modal-overlay" id="transaction-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Add Transaction</h3>
+                <button class="btn-icon" id="close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="transaction-form">
+                    <input type="hidden" id="tx-id">
+                    
+                    <div class="form-group type-toggle">
+                        <label class="radio-btn"><input type="radio" name="tx-type" value="expense" checked> <span>Expense</span></label>
+                        <label class="radio-btn"><input type="radio" name="tx-type" value="income"> <span>Income</span></label>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tx-amount">Amount</label>
+                            <input type="number" id="tx-amount" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tx-date">Date</label>
+                            <input type="date" id="tx-date" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tx-desc">Description</label>
+                        <input type="text" id="tx-desc" placeholder="What was this for?" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tx-category">Category</label>
+                            <select id="tx-category" required>
+                                <option value="Food">Food</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Bills">Bills</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Salary">Salary</option>
+                                <option value="General">General</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tx-payment">Payment Method</label>
+                            <select id="tx-payment">
+                                <option value="Cash">Cash</option>
+                                <option value="Card">Card</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="UPI">UPI</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tx-notes">Notes (Optional)</label>
+                        <textarea id="tx-notes" rows="2" placeholder="Add extra details..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-full mt-2" id="save-tx-btn">Save Transaction</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+</html>
