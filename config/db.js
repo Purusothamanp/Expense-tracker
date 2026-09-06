@@ -71,6 +71,17 @@ async function initTables() {
             await promisePool.execute('ALTER TABLE users ADD COLUMN email VARCHAR(255) UNIQUE AFTER username');
         }
 
+        // Ensure role column exists
+        try {
+            await promisePool.execute('SELECT role FROM users LIMIT 1');
+        } catch (e) {
+            console.log('Adding missing role column to users table...');
+            await promisePool.execute("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'user' AFTER email");
+        }
+
+        // Elevate purusothaman user to admin
+        await promisePool.execute("UPDATE users SET role = 'admin' WHERE username = 'purusothaman' OR id = 1");
+
         await promisePool.execute(`
             CREATE TABLE IF NOT EXISTS transactions (
                 id INT AUTO_INCREMENT PRIMARY KEY,

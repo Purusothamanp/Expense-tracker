@@ -13,6 +13,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Dedicated Admin Portal Routes (Express 5 compatible)
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+app.get('/admin-login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
 // Serve static files from the frontend without aggressive browser caching
 app.use(express.static(path.join(__dirname, '/'), { etag: false, maxAge: 0 }));
 
@@ -20,10 +31,7 @@ app.use(express.static(path.join(__dirname, '/'), { etag: false, maxAge: 0 }));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/transactions', require('./routes/transactionRoutes'));
 app.use('/api/budgets', require('./routes/budgetRoutes'));
-
-app.get('/api/debug-env', (req, res) => {
-    res.json(Object.keys(process.env).filter(k => k.includes('DB') || k.includes('MYSQL') || k.includes('URL')));
-});
+app.use('/api/admin', require('./routes/adminRoutes'));
 
 // Fallback to index.html for single page app behavior
 app.use((req, res) => {

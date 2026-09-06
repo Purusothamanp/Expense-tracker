@@ -51,6 +51,9 @@
             <p style="text-align:center; margin-top:20px; color:var(--text-secondary);">
                 Don't have an account? <a href="#" id="link-to-register" style="color:var(--color-primary); font-weight:600;">Sign up</a>
             </p>
+            <p style="text-align:center; margin-top:12px; font-size:13px;">
+                <a href="/admin" style="color:var(--text-secondary); text-decoration:none;"><i class="ph ph-shield-check"></i> Admin Portal Login</a>
+            </p>
         </div>
     </div>
 
@@ -164,7 +167,7 @@
                 </div>
                 
                 <div class="nav-links">
-                    <!-- Removed Dashboard Link -->
+                    <a href="/admin" class="btn btn-outline" id="nav-goto-admin" style="display: none; padding: 6px 14px; font-size: 13px; text-decoration: none; border-color: #8b5cf6; color: #8b5cf6;"><i class="ph ph-shield-check"></i> Admin Portal</a>
                 </div>
                 
                 <div class="nav-actions">
@@ -176,120 +179,232 @@
                     <button class="btn-icon" id="logout-btn" title="Logout"><i class="ph ph-sign-out"></i></button>
                     <div class="user-profile" style="display: flex; align-items: center; gap: 8px;">
                         <span id="nav-username" style="font-weight: 600; font-size: 14px; color: var(--text-primary);">User</span>
+                        <span id="admin-badge" class="badge-role-admin" style="display: none;">Admin</span>
                         <img id="nav-avatar" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="User">
                     </div>
                 </div>
             </div>
             <!-- Mobile Menu Dropdown -->
             <div class="mobile-nav" id="mobile-nav">
-                <a href="#" class="nav-item active">Dashboard</a>
-                <a href="#" class="nav-item">Transactions</a>
-                <a href="#" class="nav-item">Budgets</a>
-                <a href="#" class="nav-item">Reports</a>
+                <a href="#" class="nav-item active" id="mobile-nav-user">Overview</a>
+                <a href="#" class="nav-item" id="mobile-nav-admin" style="display: none;">Admin Panel</a>
             </div>
         </nav>
 
         <!-- Main Content Workspace -->
         <main class="main-workspace">
             
-            <div class="workspace-header">
-                <h2>Overview</h2>
-            </div>
+            <!-- User Dashboard View -->
+            <div id="user-dashboard-view">
+                <div class="workspace-header">
+                    <h2>Overview</h2>
+                </div>
 
-            <!-- Summary Cards Hero -->
-            <div class="summary-hero">
-                <div class="summary-card">
-                    <div class="card-icon balance"><i class="ph ph-wallet"></i></div>
-                    <div class="card-info">
-                        <p>Total Balance</p>
-                        <h3 id="total-balance">₹0</h3>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="card-icon income"><i class="ph ph-trend-up"></i></div>
-                    <div class="card-info">
-                        <p>Total Income</p>
-                        <h3 id="total-income">₹0</h3>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="card-icon expense"><i class="ph ph-trend-down"></i></div>
-                    <div class="card-info">
-                        <p>Total Expenses</p>
-                        <h3 id="total-expense">₹0</h3>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="card-icon savings"><i class="ph ph-piggy-bank"></i></div>
-                    <div class="card-info">
-                        <p>Savings</p>
-                        <h3 id="total-savings">₹0</h3>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Two-Column Asymmetric Grid -->
-            <div class="two-column-grid">
-                
-                <!-- LEFT COLUMN (Analytics) -->
-                <div class="col-left">
-                    <div class="card chart-section">
-                        <div class="card-header">
-                            <h3>Cash Flow</h3>
-                            <select id="chart-period" class="select-small">
-                                <option value="monthly">Monthly</option>
-                            </select>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="overviewChart"></canvas>
+                <!-- Summary Cards Hero -->
+                <div class="summary-hero">
+                    <div class="summary-card">
+                        <div class="card-icon balance"><i class="ph ph-wallet"></i></div>
+                        <div class="card-info">
+                            <p>Total Balance</p>
+                            <h3 id="total-balance">₹0</h3>
                         </div>
                     </div>
-
-                    <div class="card budgets-section">
-                        <div class="card-header">
-                            <h3>Budget Tracker</h3>
+                    <div class="summary-card">
+                        <div class="card-icon income"><i class="ph ph-trend-up"></i></div>
+                        <div class="card-info">
+                            <p>Total Income</p>
+                            <h3 id="total-income">₹0</h3>
                         </div>
-                        <div class="budget-list" id="budget-list">
-                            <!-- Budgets injected here -->
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon expense"><i class="ph ph-trend-down"></i></div>
+                        <div class="card-info">
+                            <p>Total Expenses</p>
+                            <h3 id="total-expense">₹0</h3>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon savings"><i class="ph ph-piggy-bank"></i></div>
+                        <div class="card-info">
+                            <p>Savings</p>
+                            <h3 id="total-savings">₹0</h3>
                         </div>
                     </div>
                 </div>
-                
-                <!-- RIGHT COLUMN (Action & History) -->
-                <div class="col-right">
-                    <button class="btn btn-primary btn-large w-full mb-4" id="open-transaction-modal">
-                        <i class="ph ph-plus"></i> Add Transaction
-                    </button>
 
-                    <div class="card categories-section mb-4">
-                        <div class="card-header">
-                            <h3>Top Categories</h3>
-                        </div>
-                        <div class="categories-list" id="categories-list">
-                            <!-- Categories injected here -->
-                        </div>
-                    </div>
-
-                    <div class="card transactions-section">
-                        <div class="card-header" style="flex-direction:column; align-items:flex-start; gap:12px;">
-                            <h3>Recent Activity</h3>
-                            <div class="filter-group w-full" style="display:flex; width:100%;">
-                                <input type="text" id="search-tx" placeholder="Search..." class="input-small" style="flex:1;">
-                                <select id="filter-type" class="select-small">
-                                    <option value="all">All</option>
-                                    <option value="income">Income</option>
-                                    <option value="expense">Expense</option>
+                <!-- Two-Column Asymmetric Grid -->
+                <div class="two-column-grid">
+                    
+                    <!-- LEFT COLUMN (Analytics) -->
+                    <div class="col-left">
+                        <div class="card chart-section">
+                            <div class="card-header">
+                                <h3>Cash Flow</h3>
+                                <select id="chart-period" class="select-small">
+                                    <option value="monthly">Monthly</option>
                                 </select>
                             </div>
+                            <div class="chart-container">
+                                <canvas id="overviewChart"></canvas>
+                            </div>
                         </div>
-                        <div class="transaction-list" id="transaction-list" style="max-height: 500px;">
-                            <!-- Transactions injected here -->
+
+                        <div class="card budgets-section">
+                            <div class="card-header">
+                                <h3>Budget Tracker</h3>
+                            </div>
+                            <div class="budget-list" id="budget-list">
+                                <!-- Budgets injected here -->
+                            </div>
                         </div>
                     </div>
-                </div>
+                    
+                    <!-- RIGHT COLUMN (Action & History) -->
+                    <div class="col-right">
+                        <button class="btn btn-primary btn-large w-full mb-4" id="open-transaction-modal">
+                            <i class="ph ph-plus"></i> Add Transaction
+                        </button>
+
+                        <div class="card categories-section mb-4">
+                            <div class="card-header">
+                                <h3>Top Categories</h3>
+                            </div>
+                            <div class="categories-list" id="categories-list">
+                                <!-- Categories injected here -->
+                            </div>
+                        </div>
+
+                        <div class="card transactions-section">
+                            <div class="card-header" style="flex-direction:column; align-items:flex-start; gap:12px;">
+                                <h3>Recent Activity</h3>
+                                <div class="filter-group w-full" style="display:flex; width:100%;">
+                                    <input type="text" id="search-tx" placeholder="Search..." class="input-small" style="flex:1;">
+                                    <select id="filter-type" class="select-small">
+                                        <option value="all">All</option>
+                                        <option value="income">Income</option>
+                                        <option value="expense">Expense</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="transaction-list" id="transaction-list" style="max-height: 500px;">
+                                <!-- Transactions injected here -->
+                            </div>
+                        </div>
+                    </div>
 
             </div>
         </main>
+    </div>
+
+    <!-- ADMIN WORKSPACE LAYOUT (Redirected here upon Admin Login) -->
+    <div id="admin-app-layout" class="admin-layout-wrapper" style="display: none;">
+        
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-brand">
+                <i class="ph ph-shield-check"></i>
+                <div>
+                    <h2>Expense Tracker</h2>
+                    <span>Admin Module</span>
+                </div>
+            </div>
+
+            <div style="padding: 10px 14px; background: rgba(139, 92, 246, 0.15); border-radius: 8px; color: #8b5cf6; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 10px;">
+                <i class="ph ph-users-three" style="font-size: 18px;"></i>
+                <span class="admin-nav-title">User Management</span>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: auto;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <img id="admin-avatar" src="https://ui-avatars.com/api/?name=Admin&background=8b5cf6&color=fff" alt="Admin" style="width: 32px; height: 32px; border-radius: 50%;">
+                        <div>
+                            <div id="admin-user-name" style="font-weight: 600; font-size: 13px; color: var(--text-primary);">Admin</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">Administrator</div>
+                        </div>
+                    </div>
+                    <button class="btn-icon" id="admin-logout-btn" title="Logout"><i class="ph ph-sign-out"></i></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTAINER -->
+        <div class="admin-main-container">
+            
+            <!-- TOPBAR -->
+            <header class="admin-topbar" style="justify-content: flex-end;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="btn btn-outline" id="admin-refresh-btn" style="padding: 5px 10px; font-size: 12px;">
+                        <i class="ph ph-arrows-clockwise"></i> Refresh List
+                    </button>
+                    <button class="btn-icon" id="admin-theme-toggle" title="Toggle theme">
+                        <i class="ph ph-moon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- CONTENT AREA (FIT PERFECTLY TO SCREEN) -->
+            <main class="admin-content-area">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; flex-shrink: 0;">
+                    <div>
+                        <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 2px 0; color: var(--text-primary);">Registered Users List</h2>
+                        <p style="color: var(--text-secondary); font-size: 12px; margin: 0;">View, edit/modify user details, change roles, or delete accounts.</p>
+                    </div>
+                    <input type="text" id="admin-search-users" placeholder="Search by username or email..." class="input-small" style="max-width: 280px; width: 100%; height: 36px; font-size: 12px;">
+                </div>
+
+                <div class="admin-card-container">
+                    <div class="table-responsive-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Joined Date</th>
+                                    <th style="text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-users">
+                                <!-- User rows loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal-overlay" id="edit-user-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Edit User</h3>
+                <button class="btn-icon" id="close-edit-user-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-user-form">
+                    <input type="hidden" id="edit-user-id">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="edit-user-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="edit-user-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="edit-user-role">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">Update User</button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Transaction Modal -->

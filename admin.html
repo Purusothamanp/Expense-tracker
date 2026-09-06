@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker | Admin User Management</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Screen-level fitting, responsive table & custom dark scrollbars */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .admin-portal-body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .admin-auth-wrapper {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-main);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .admin-auth-container {
+            max-width: 420px;
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 36px 32px;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+
+        .admin-layout-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .admin-sidebar {
+            width: 240px;
+            height: 100vh;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .admin-sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 6px 16px 6px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .admin-sidebar-brand i {
+            font-size: 26px;
+            color: #8b5cf6;
+        }
+
+        .admin-sidebar-brand h2 {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .admin-sidebar-brand span {
+            font-size: 9px;
+            background: rgba(139, 92, 246, 0.18);
+            color: #8b5cf6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .admin-main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-main);
+            min-width: 0; /* Prevents flex children from overflowing */
+        }
+
+        .admin-topbar {
+            height: 60px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .admin-content-area {
+            padding: 20px 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow: hidden;
+        }
+
+        .admin-card-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .table-responsive-container {
+            flex: 1;
+            overflow: auto;
+            border-radius: 6px;
+        }
+
+        /* Sleek Modern Scrollbar */
+        .table-responsive-container::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .table-responsive-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .table-responsive-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .table-responsive-container::-webkit-scrollbar-thumb:hover {
+            background: #8b5cf6;
+        }
+
+        /* Compact Table Design to Fit All Screens */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .admin-table th {
+            padding: 10px 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 12px;
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .admin-table td {
+            padding: 12px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .admin-table tbody tr:hover {
+            background-color: var(--bg-hover, rgba(0, 0, 0, 0.03));
+        }
+
+        /* Perfect Dark Mode Override */
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="email"],
+        body.dark-mode input[type="password"],
+        body.dark-mode select {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+
+        body.dark-mode input[type="text"]:focus,
+        body.dark-mode input[type="email"]:focus,
+        body.dark-mode input[type="password"]:focus,
+        body.dark-mode select:focus {
+            border-color: #8b5cf6 !important;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
+        }
+
+        body.dark-mode .admin-table th {
+            background-color: #1e293b;
+            color: #94a3b8;
+            border-bottom-color: #334155;
+        }
+
+        body.dark-mode .admin-table td {
+            border-bottom-color: #334155;
+            color: #f8fafc;
+        }
+
+        body.dark-mode .admin-table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        /* Action Buttons */
+        .btn-edit-sm {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .btn-edit-sm:hover {
+            background-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        .btn-danger-sm {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .btn-danger-sm:hover {
+            background-color: #ef4444;
+            color: #ffffff;
+        }
+
+        /* Modal */
+        .admin-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .admin-modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 440px;
+            padding: 24px;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                width: 54px;
+                padding: 14px 6px;
+            }
+            .admin-sidebar-brand h2, .admin-sidebar-brand span, .admin-nav-title {
+                display: none;
+            }
+            .admin-content-area {
+                padding: 14px;
+            }
+            .admin-topbar {
+                padding: 0 14px;
+            }
+        }
+    </style>
+</head>
+<body class="admin-portal-body light-mode">
+    
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ADMIN LOGIN PAGE -->
+    <div id="admin-login-page" class="admin-auth-wrapper">
+        <div class="admin-auth-container">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="width: 52px; height: 52px; background: rgba(139, 92, 246, 0.15); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                    <i class="ph ph-shield-check" style="font-size: 30px; color: #8b5cf6;"></i>
+                </div>
+                <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 4px 0; color: var(--text-primary);">Admin Portal</h2>
+                <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">Sign in to access registered user management.</p>
+            </div>
+
+            <form id="admin-login-form">
+                <div class="form-group mb-3">
+                    <label for="admin-email" style="color: var(--text-primary); font-size: 13px;">Admin Email or Username</label>
+                    <input type="text" id="admin-email" placeholder="admin@example.com" required>
+                </div>
+                <div class="form-group mb-4">
+                    <label for="admin-password" style="color: var(--text-primary); font-size: 13px;">Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="admin-password" placeholder="••••••••" required>
+                        <button type="button" class="toggle-password-btn" title="Toggle password visibility">
+                            <i class="ph ph-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-full" style="background-color: #8b5cf6; border-color: #8b5cf6; height: 44px; font-weight: 600;">
+                    <i class="ph ph-lock-key"></i> Login to Admin Portal
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 20px; font-size: 13px;">
+                <a href="/" style="color: var(--text-secondary); text-decoration: none;">
+                    <i class="ph ph-arrow-left"></i> Back to Expense Tracker
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN WORKSPACE LAYOUT -->
+    <div id="admin-layout-wrapper" class="admin-layout-wrapper" style="display: none;">
+        
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-brand">
+                <i class="ph ph-shield-check"></i>
+                <div>
+                    <h2>Expense Tracker</h2>
+                    <span>Admin Module</span>
+                </div>
+            </div>
+
+            <div style="padding: 10px 14px; background: rgba(139, 92, 246, 0.15); border-radius: 8px; color: #8b5cf6; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 10px;">
+                <i class="ph ph-users-three" style="font-size: 18px;"></i>
+                <span class="admin-nav-title">User Management</span>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: auto;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <img id="admin-avatar" src="https://ui-avatars.com/api/?name=Admin&background=8b5cf6&color=fff" alt="Admin" style="width: 32px; height: 32px; border-radius: 50%;">
+                        <div>
+                            <div id="admin-user-name" style="font-weight: 600; font-size: 13px; color: var(--text-primary);">Admin</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">Administrator</div>
+                        </div>
+                    </div>
+                    <button class="btn-icon" id="admin-logout-btn" title="Logout"><i class="ph ph-sign-out"></i></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTAINER -->
+        <div class="admin-main-container">
+            
+            <!-- TOPBAR -->
+            <header class="admin-topbar" style="justify-content: flex-end;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="btn btn-outline" id="admin-refresh-btn" style="padding: 5px 10px; font-size: 12px;">
+                        <i class="ph ph-arrows-clockwise"></i> Refresh List
+                    </button>
+                    <button class="btn-icon" id="admin-theme-toggle" title="Toggle theme">
+                        <i class="ph ph-moon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- CONTENT AREA (FIT PERFECTLY TO SCREEN) -->
+            <main class="admin-content-area">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; flex-shrink: 0;">
+                    <div>
+                        <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 2px 0; color: var(--text-primary);">Registered Users List</h2>
+                        <p style="color: var(--text-secondary); font-size: 12px; margin: 0;">View, edit/modify user details, change roles, or delete accounts.</p>
+                    </div>
+                    <input type="text" id="admin-search-users" placeholder="Search by username or email..." class="input-small" style="max-width: 280px; width: 100%; height: 36px; font-size: 12px;">
+                </div>
+
+                <div class="admin-card-container">
+                    <div class="table-responsive-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Joined Date</th>
+                                    <th style="text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-users">
+                                <!-- User rows loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- EDIT / MODIFY USER MODAL -->
+    <div id="edit-user-modal" class="admin-modal-overlay">
+        <div class="admin-modal">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; font-weight: 700; margin: 0; color: var(--text-primary);">Modify User Account</h3>
+                <button class="btn-icon" id="close-edit-modal"><i class="ph ph-x"></i></button>
+            </div>
+
+            <form id="edit-user-form">
+                <input type="hidden" id="edit-user-id">
+
+                <div class="form-group mb-3">
+                    <label for="edit-username" style="color: var(--text-primary); font-size: 12px;">Username</label>
+                    <input type="text" id="edit-username" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="edit-email" style="color: var(--text-primary); font-size: 12px;">Email Address</label>
+                    <input type="email" id="edit-email" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="edit-role" style="color: var(--text-primary); font-size: 12px;">Role</label>
+                    <select id="edit-role" class="select-small" style="width: 100%; height: 38px; font-size: 13px;">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="edit-password" style="color: var(--text-primary); font-size: 12px;">New Password (Optional)</label>
+                    <input type="password" id="edit-password" placeholder="Leave blank to keep current password">
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-outline" id="cancel-edit-btn" style="padding: 6px 14px; font-size: 13px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="background-color: #8b5cf6; border-color: #8b5cf6; padding: 6px 16px; font-size: 13px;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin JS -->
+    <script src="admin.js"></script>
+</body>
+</html>

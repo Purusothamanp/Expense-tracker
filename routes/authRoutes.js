@@ -54,6 +54,8 @@ router.post('/register', async (req, res) => {
         res.status(201).json({
             id: result.insertId,
             username,
+            email,
+            role: 'user',
             token: generateToken(result.insertId)
         });
     } catch (error) {
@@ -89,6 +91,8 @@ router.post('/login', async (req, res) => {
             res.json({
                 id: user.id,
                 username: user.username,
+                email: user.email,
+                role: user.role || 'user',
                 token: generateToken(user.id)
             });
         } else {

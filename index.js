@@ -11,6 +11,8 @@ let overviewChartInstance = null;
 const API_URL = '/api';
 let authToken = localStorage.getItem('smartSpendToken') || null;
 let currentUsername = localStorage.getItem('smartSpendUser') || 'User';
+let currentUserRole = localStorage.getItem('smartSpendRole') || 'user';
+let adminUsersList = [];
 
 // ====== DOM ELEMENTS ======
 const monthInput = document.getElementById("month");
@@ -167,6 +169,39 @@ function init() {
     }
     logoutBtn.addEventListener('click', handleLogout);
 
+    // Admin Layout Listeners
+    const adminLogoutBtn = document.getElementById('admin-logout-btn');
+    const adminRefreshBtn = document.getElementById('admin-refresh-btn');
+    const adminThemeToggle = document.getElementById('admin-theme-toggle');
+    const adminSearchUsers = document.getElementById('admin-search-users');
+    const closeEditModalBtn = document.getElementById('close-edit-user-modal');
+    const editUserForm = document.getElementById('edit-user-form');
+
+    if (adminLogoutBtn) adminLogoutBtn.addEventListener('click', handleLogout);
+    if (adminRefreshBtn) adminRefreshBtn.addEventListener('click', () => fetchAdminUsers(true));
+    if (adminThemeToggle) adminThemeToggle.addEventListener('click', toggleTheme);
+    if (adminSearchUsers) {
+        adminSearchUsers.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = adminUsersList.filter(u => 
+                (u.username && u.username.toLowerCase().includes(query)) ||
+                (u.email && u.email.toLowerCase().includes(query))
+            );
+            renderAdminUsersTable(filtered);
+        });
+    }
+
+    if (closeEditModalBtn) {
+        closeEditModalBtn.addEventListener('click', () => {
+            const modal = document.getElementById('edit-user-modal');
+            if (modal) modal.classList.remove('active');
+        });
+    }
+
+    if (editUserForm) {
+        editUserForm.addEventListener('submit', handleEditUserSubmit);
+    }
+
     checkAuth();
 }
 
@@ -191,23 +226,39 @@ function showAuthPage(page) {
 }
 
 function checkAuth() {
+    const adminLayout = document.getElementById('admin-app-layout');
+
     if (authToken) {
         loginPage.classList.remove('active');
         registerPage.classList.remove('active');
         if (resetPasswordPage) resetPasswordPage.classList.remove('active');
         landingPage.classList.remove('active');
-        appLayout.style.display = 'flex'; // or whatever its default is
-        
-        // Update user profile UI
-        const navUsername = document.getElementById('nav-username');
-        const navAvatar = document.getElementById('nav-avatar');
-        if (navUsername) navUsername.textContent = currentUsername;
-        if (navAvatar) navAvatar.src = `https://ui-avatars.com/api/?name=${currentUsername}&background=0D8ABC&color=fff`;
 
-        fetchData();
+        if (currentUserRole === 'admin') {
+            if (appLayout) appLayout.style.display = 'none';
+            if (adminLayout) adminLayout.style.display = 'flex';
+
+            const adminNameEl = document.getElementById('admin-user-name');
+            const adminAvatar = document.getElementById('admin-avatar');
+            if (adminNameEl) adminNameEl.textContent = currentUsername;
+            if (adminAvatar) adminAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUsername)}&background=8b5cf6&color=fff`;
+
+            fetchAdminUsers();
+        } else {
+            if (adminLayout) adminLayout.style.display = 'none';
+            if (appLayout) appLayout.style.display = 'flex';
+
+            const navUsername = document.getElementById('nav-username');
+            const navAvatar = document.getElementById('nav-avatar');
+            if (navUsername) navUsername.textContent = currentUsername;
+            if (navAvatar) navAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUsername)}&background=0D8ABC&color=fff`;
+
+            fetchData();
+        }
     } else {
         landingPage.classList.add('active');
-        appLayout.style.display = 'none';
+        if (appLayout) appLayout.style.display = 'none';
+        if (adminLayout) adminLayout.style.display = 'none';
     }
 }
 
@@ -234,8 +285,10 @@ async function handleLogin(e) {
         if (res.ok) {
             authToken = result.token;
             currentUsername = result.username;
+            currentUserRole = result.role || 'user';
             localStorage.setItem('smartSpendToken', authToken);
             localStorage.setItem('smartSpendUser', currentUsername);
+            localStorage.setItem('smartSpendRole', currentUserRole);
             showToast('Logged in successfully');
             checkAuth();
         } else {
@@ -268,8 +321,10 @@ async function handleRegister(e) {
         if (res.ok) {
             authToken = result.token;
             currentUsername = result.username;
+            currentUserRole = result.role || 'user';
             localStorage.setItem('smartSpendToken', authToken);
             localStorage.setItem('smartSpendUser', currentUsername);
+            localStorage.setItem('smartSpendRole', currentUserRole);
             showToast('Account created successfully!');
             checkAuth();
         } else {
@@ -312,9 +367,12 @@ async function handleResetPassword(e) {
 function handleLogout() {
     authToken = null;
     currentUsername = 'User';
+    currentUserRole = 'user';
     localStorage.removeItem('smartSpendToken');
     localStorage.removeItem('smartSpendUser');
+    localStorage.removeItem('smartSpendRole');
     data.transactions = [];
+    switchWorkspaceTab('user');
     checkAuth();
 }
 
@@ -715,6 +773,171 @@ function renderChart() {
                 x: { grid: { display: false }, ticks: { color: textColor } }
             }
         }
+    });
+}
+
+// ====== ADMIN MODULE FUNCTIONS ======
+function switchWorkspaceTab(tab) {
+    const userView = document.getElementById('user-dashboard-view');
+    const adminView = document.getElementById('admin-dashboard-view');
+    const navTabUser = document.getElementById('nav-tab-user');
+    const navTabAdmin = document.getElementById('nav-tab-admin');
+    const mobileNavUser = document.getElementById('mobile-nav-user');
+    const mobileNavAdmin = document.getElementById('mobile-nav-admin');
+
+    if (tab === 'admin' && currentUserRole === 'admin') {
+        if (userView) userView.style.display = 'none';
+        if (adminView) adminView.style.display = 'block';
+        if (navTabUser) navTabUser.classList.remove('active');
+        if (navTabAdmin) navTabAdmin.classList.add('active');
+        if (mobileNavUser) mobileNavUser.classList.remove('active');
+        if (mobileNavAdmin) mobileNavAdmin.classList.add('active');
+        loadAdminData();
+    } else {
+        if (userView) userView.style.display = 'block';
+        if (adminView) adminView.style.display = 'none';
+        if (navTabUser) navTabUser.classList.add('active');
+        if (navTabAdmin) navTabAdmin.classList.remove('active');
+        if (mobileNavUser) mobileNavUser.classList.add('active');
+        if (mobileNavAdmin) mobileNavAdmin.classList.remove('active');
+    }
+}
+
+async function fetchAdminUsers(isManual = false) {
+    if (currentUserRole !== 'admin') return;
+
+    const refreshBtn = document.getElementById('admin-refresh-btn');
+    if (refreshBtn) refreshBtn.disabled = true;
+
+    try {
+        const res = await fetch(`${API_URL}/admin/users`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (res.status === 401 || res.status === 403) return handleLogout();
+
+        if (res.ok) {
+            adminUsersList = await res.json();
+            renderAdminUsersTable(adminUsersList);
+            if (isManual) {
+                showToast('Users list refreshed');
+            }
+        }
+    } catch (err) {
+        console.error('Error fetching users list:', err);
+        showToast('Error loading users list', 'error');
+    } finally {
+        if (refreshBtn) refreshBtn.disabled = false;
+    }
+}
+
+function renderAdminUsersTable(users) {
+    const tbody = document.getElementById('table-body-users');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    if (!users || users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 24px;">No users found.</td></tr>';
+        return;
+    }
+
+    users.forEach(u => {
+        const joinedDate = u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A';
+        const roleBadge = u.role === 'admin' 
+            ? '<span class="badge-role-admin">Admin</span>' 
+            : '<span class="badge-role-user">User</span>';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>#${u.id}</td>
+            <td style="font-weight: 600;">${escapeHtml(u.username)}</td>
+            <td style="color: var(--text-secondary);">${escapeHtml(u.email || 'N/A')}</td>
+            <td>${roleBadge}</td>
+            <td>${joinedDate}</td>
+            <td style="text-align: right;">
+                <div class="admin-actions-cell">
+                    <button class="btn-edit-sm" onclick="openEditUserModal(${u.id})">
+                        <i class="ph ph-pencil-simple"></i> Edit / Modify
+                    </button>
+                    <button class="btn-danger-sm" onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')">
+                        <i class="ph ph-trash"></i> Delete
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openEditUserModal(userId) {
+    const user = adminUsersList.find(u => u.id === userId);
+    if (!user) return;
+
+    const modal = document.getElementById('edit-user-modal');
+    if (!modal) return;
+
+    document.getElementById('edit-user-id').value = user.id;
+    document.getElementById('edit-user-name').value = user.username || '';
+    document.getElementById('edit-user-email').value = user.email || '';
+    document.getElementById('edit-user-role').value = user.role || 'user';
+
+    modal.classList.add('active');
+}
+
+async function handleEditUserSubmit(e) {
+    e.preventDefault();
+    const userId = document.getElementById('edit-user-id').value;
+    const username = document.getElementById('edit-user-name').value.trim();
+    const email = document.getElementById('edit-user-email').value.trim();
+    const role = document.getElementById('edit-user-role').value;
+
+    try {
+        const res = await fetch(`${API_URL}/admin/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, email, role })
+        });
+        const result = await res.json();
+
+        if (res.ok) {
+            showToast(result.message || 'User details updated successfully!');
+            const modal = document.getElementById('edit-user-modal');
+            if (modal) modal.classList.remove('active');
+            fetchAdminUsers();
+        } else {
+            showToast(result.message || 'Failed to update user', 'error');
+        }
+    } catch (err) {
+        showToast('Error updating user details', 'error');
+    }
+}
+
+async function deleteUser(userId, username) {
+    if (!confirm(`Are you sure you want to delete user "${username}"? All associated transactions will be deleted!`)) return;
+
+    try {
+        const res = await fetch(`${API_URL}/admin/users/${userId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const result = await res.json();
+        if (res.ok) {
+            showToast(result.message || 'User deleted successfully.');
+            fetchAdminUsers();
+        } else {
+            showToast(result.message || 'Failed to delete user', 'error');
+        }
+    } catch (err) {
+        showToast('Error deleting user', 'error');
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
     });
 }
 

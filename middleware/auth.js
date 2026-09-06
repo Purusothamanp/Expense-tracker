@@ -13,13 +13,13 @@ const protect = async (req, res, next) => {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
             // Check if user actually exists in database
-            const [users] = await db.execute('SELECT id FROM users WHERE id = ?', [decoded.id]);
+            const [users] = await db.execute('SELECT id, role FROM users WHERE id = ?', [decoded.id]);
             if (!users || users.length === 0) {
                 return res.status(401).json({ message: 'User session invalid or user no longer exists.' });
             }
 
-            // Set user ID on request object
-            req.user = { id: decoded.id };
+            // Set user ID and role on request object
+            req.user = { id: users[0].id, role: users[0].role || 'user' };
 
             return next();
         } catch (error) {
@@ -33,4 +33,12 @@ const protect = async (req, res, next) => {
     }
 };
 
-module.exports = { protect };
+const requireAdmin = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        res.status(403).json({ message: 'Access denied. Admin privileges required.' });
+    }
+};
+
+module.exports = { protect, requireAdmin };
