@@ -20,15 +20,20 @@ const body = document.body;
 // Auth Elements
 const loginPage = document.getElementById("login-page");
 const registerPage = document.getElementById("register-page");
+const resetPasswordPage = document.getElementById("reset-password-page");
 const loginForm = document.getElementById("login-form");
 const registerForm = document.getElementById("register-form");
+const resetPasswordForm = document.getElementById("reset-password-form");
 const logoutBtn = document.getElementById("logout-btn");
 
 // Links and Close Buttons
 const linkToRegister = document.getElementById("link-to-register");
 const linkToLogin = document.getElementById("link-to-login");
+const linkToReset = document.getElementById("link-to-reset");
 const closeLoginBtn = document.getElementById("close-login-btn");
 const closeRegisterBtn = document.getElementById("close-register-btn");
+const closeResetBtn = document.getElementById("close-reset-btn");
+const resetLinkToLogin = document.getElementById("reset-link-to-login");
 
 // Landing Page Elements
 const landingPage = document.getElementById("landing-page");
@@ -103,6 +108,21 @@ function init() {
         showAuthPage('register');
     });
 
+    // Password Visibility Toggle Listener
+    document.querySelectorAll('.toggle-password-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const input = btn.previousElementSibling;
+            if (!input) return;
+            const isPassword = input.getAttribute('type') === 'password';
+            input.setAttribute('type', isPassword ? 'text' : 'password');
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.className = isPassword ? 'ph ph-eye-slash' : 'ph ph-eye';
+            }
+        });
+    });
+
     // Auth Listeners
     linkToRegister.addEventListener('click', (e) => {
         e.preventDefault();
@@ -112,6 +132,18 @@ function init() {
         e.preventDefault();
         showAuthPage('login');
     });
+    if (linkToReset) {
+        linkToReset.addEventListener('click', (e) => {
+            e.preventDefault();
+            showAuthPage('reset');
+        });
+    }
+    if (resetLinkToLogin) {
+        resetLinkToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            showAuthPage('login');
+        });
+    }
     
     closeLoginBtn.addEventListener('click', () => {
         loginPage.classList.remove('active');
@@ -121,9 +153,18 @@ function init() {
         registerPage.classList.remove('active');
         landingPage.classList.add('active');
     });
+    if (closeResetBtn) {
+        closeResetBtn.addEventListener('click', () => {
+            if (resetPasswordPage) resetPasswordPage.classList.remove('active');
+            landingPage.classList.add('active');
+        });
+    }
 
     loginForm.addEventListener('submit', handleLogin);
     registerForm.addEventListener('submit', handleRegister);
+    if (resetPasswordForm) {
+        resetPasswordForm.addEventListener('submit', handleResetPassword);
+    }
     logoutBtn.addEventListener('click', handleLogout);
 
     checkAuth();
@@ -137,9 +178,15 @@ function showAuthPage(page) {
     if (page === 'login') {
         loginPage.classList.add('active');
         registerPage.classList.remove('active');
-    } else {
+        if (resetPasswordPage) resetPasswordPage.classList.remove('active');
+    } else if (page === 'register') {
         registerPage.classList.add('active');
         loginPage.classList.remove('active');
+        if (resetPasswordPage) resetPasswordPage.classList.remove('active');
+    } else if (page === 'reset') {
+        if (resetPasswordPage) resetPasswordPage.classList.add('active');
+        loginPage.classList.remove('active');
+        registerPage.classList.remove('active');
     }
 }
 
@@ -147,6 +194,7 @@ function checkAuth() {
     if (authToken) {
         loginPage.classList.remove('active');
         registerPage.classList.remove('active');
+        if (resetPasswordPage) resetPasswordPage.classList.remove('active');
         landingPage.classList.remove('active');
         appLayout.style.display = 'flex'; // or whatever its default is
         
@@ -161,6 +209,13 @@ function checkAuth() {
         landingPage.classList.add('active');
         appLayout.style.display = 'none';
     }
+}
+
+function validatePasswordFrontend(password) {
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const isMinLength = password.length >= 6;
+    return isMinLength && hasUppercase && hasNumber;
 }
 
 async function handleLogin(e) {
@@ -197,6 +252,11 @@ async function handleRegister(e) {
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
     
+    if (!validatePasswordFrontend(password)) {
+        showToast("Password must be at least 6 characters with 1 uppercase letter (A-Z) and 1 number (0-9).", "error");
+        return;
+    }
+
     try {
         const res = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
@@ -217,6 +277,35 @@ async function handleRegister(e) {
         }
     } catch (err) {
         showToast('Registration failed: Network error', 'error');
+    }
+}
+
+async function handleResetPassword(e) {
+    e.preventDefault();
+    const email = document.getElementById('reset-email').value;
+    const newPassword = document.getElementById('reset-password').value;
+    
+    if (!validatePasswordFrontend(newPassword)) {
+        showToast("New password must be at least 6 characters with 1 uppercase letter (A-Z) and 1 number (0-9).", "error");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/auth/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, newPassword })
+        });
+        const result = await res.json();
+        
+        if (res.ok) {
+            showToast(result.message || 'Password reset successfully!');
+            showAuthPage('login');
+        } else {
+            showToast(result.error ? `${result.message}: ${result.error}` : (result.message || 'Password reset failed'), 'error');
+        }
+    } catch (err) {
+        showToast('Password reset failed: Network error', 'error');
     }
 }
 
