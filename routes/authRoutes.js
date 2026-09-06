@@ -6,7 +6,8 @@ const db = require('../config/db');
 
 // Generate JWT
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
+    const secret = process.env.JWT_SECRET || 'smartspend_jwt_secret_key_2026';
+    return jwt.sign({ id }, secret, {
         expiresIn: '30d',
     });
 };
@@ -44,8 +45,8 @@ router.post('/register', async (req, res) => {
             token: generateToken(result.insertId)
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error during registration', error: error.message, stack: error.stack });
+        console.error('Registration error:', error);
+        res.status(500).json({ message: 'Server error during registration', error: error.message });
     }
 });
 
@@ -55,6 +56,10 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Please provide email and password' });
+        }
 
         // Check for user
         const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
@@ -78,8 +83,8 @@ router.post('/login', async (req, res) => {
             res.status(401).json({ message: 'Invalid credentials' });
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error during login' });
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Server error during login', error: error.message });
     }
 });
 

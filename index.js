@@ -184,10 +184,10 @@ async function handleLogin(e) {
             showToast('Logged in successfully');
             checkAuth();
         } else {
-            showToast(result.message, 'error');
+            showToast(result.error ? `${result.message}: ${result.error}` : (result.message || 'Login failed'), 'error');
         }
     } catch (err) {
-        showToast('Login failed', 'error');
+        showToast('Login failed: Network error', 'error');
     }
 }
 
