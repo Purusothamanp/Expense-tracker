@@ -3,19 +3,41 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const pool = process.env.MYSQL_URL || process.env.DATABASE_URL
-    ? mysql.createPool(process.env.MYSQL_URL || process.env.DATABASE_URL)
-    : mysql.createPool({
+function getDbOptions() {
+    const rawUrl = process.env.MYSQL_URL || process.env.DATABASE_URL;
+    if (rawUrl) {
+        try {
+            const parsed = new URL(rawUrl);
+            return {
+                host: parsed.hostname,
+                user: parsed.username,
+                password: decodeURIComponent(parsed.password),
+                database: parsed.pathname.replace(/^\//, ''),
+                port: parsed.port ? parseInt(parsed.port, 10) : 3306,
+                waitForConnections: true,
+                connectionLimit: 10,
+                queueLimit: 0,
+                enableKeepAlive: true,
+                keepAliveInitialDelay: 0
+            };
+        } catch (err) {
+            console.error('URL parse failed, falling back to raw string:', err.message);
+            return rawUrl;
+        }
+    }
+    return {
         host: process.env.DB_HOST || process.env.MYSQL_HOST,
         user: process.env.DB_USER || process.env.MYSQL_USER,
         password: process.env.DB_PASSWORD || process.env.MYSQL_PASSWORD,
         database: process.env.DB_NAME || process.env.MYSQL_DATABASE,
-        port: process.env.DB_PORT || process.env.MYSQL_PORT || 3306,
+        port: parseInt(process.env.DB_PORT || process.env.MYSQL_PORT || '3306', 10),
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0
-    });
+    };
+}
 
+const pool = mysql.createPool(getDbOptions());
 const promisePool = pool.promise();
 
 // Test the connection and initialize tables

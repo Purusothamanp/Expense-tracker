@@ -213,10 +213,10 @@ async function handleRegister(e) {
             showToast('Account created successfully!');
             checkAuth();
         } else {
-            showToast(result.message, 'error');
+            showToast(result.error ? `${result.message}: ${result.error}` : (result.message || 'Registration failed'), 'error');
         }
     } catch (err) {
-        showToast('Registration failed', 'error');
+        showToast('Registration failed: Network error', 'error');
     }
 }
 
