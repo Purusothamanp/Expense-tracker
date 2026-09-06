@@ -206,8 +206,12 @@ async function handleRegister(e) {
         const result = await res.json();
         
         if (res.ok) {
-            showToast('Account created successfully! Please log in.');
-            showAuthPage('login');
+            authToken = result.token;
+            currentUsername = result.username;
+            localStorage.setItem('smartSpendToken', authToken);
+            localStorage.setItem('smartSpendUser', currentUsername);
+            showToast('Account created successfully!');
+            checkAuth();
         } else {
             showToast(result.message, 'error');
         }
@@ -237,7 +241,7 @@ async function fetchData() {
             })
         ]);
 
-        if (txRes.status === 401) return handleLogout();
+        if (txRes.status === 401 || budgetRes.status === 401) return handleLogout();
 
         const txs = await txRes.json();
         const budgetData = await budgetRes.json();
@@ -487,6 +491,9 @@ async function handleTransactionSubmit(e) {
             showToast(`Transaction ${id ? 'updated' : 'added'} successfully`);
             closeModal();
             fetchData();
+        } else if (res.status === 401) {
+            showToast("Session expired or invalid user. Please log in again.", "error");
+            handleLogout();
         } else {
             showToast("Failed to save transaction", "error");
         }
